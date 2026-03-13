@@ -14,13 +14,19 @@
 set -euo pipefail
 echo "Starting at: $(date)"
 
+#DeepVariant Version
 BIN_VERSION="1.6.1"
 
 # Directories
+#REF is path to reference genome
+#READS is path to your alignment .bam file, mine was already filtered and sorted
+#OUTDIR is path to the output directory
+
 BAM_DIR=/group/gmonroegrp2/chaehee/Pablo/pangenie/05_map_sample_to_infered_haplotype/01_align
 REF_DIR=/group/gmonroegrp2/chaehee/Pablo/pangenie/03_infered_haplotypes/output
 OUTDIR=/group/gmonroegrp2/chaehee/Pablo/pangenie/05_map_sample_to_infered_haplotype/02_call_variants
 
+# Use node-local scratch, this was possible for me as my HPC had this directory for tmp files
 TMPROOT=${OUTDIR}/tmp
 
 # Create required directories
@@ -65,6 +71,19 @@ do
 
     echo "Running DeepVariant for ${SAMPLE}"
 
+# Run DeepVariant
+# the 1st --bind is the path to the directory weer I will store my output files
+# the 2nd --bind is for the temporary directory
+# the 3rd --bind is to my local 
+# the --env selects the temporary directory and the cache
+# docker runs deepvariant
+# --model_type specifies your data type, in this case it was whole-genome-sequencing short-read
+# --ref is the path to the reference genome
+# --reads is the path to the .bam file
+# --make_examples_extra_args includes mean depth as output data
+# --output_vcf and --output-gvcf specify the path to the output vcf and gvcf files, they could be gzipped
+# num_shards specifies the number of cores or CPU to use
+
     apptainer exec \
       --bind /group/gmonroegrp2:/group/gmonroegrp2 \
       --bind ${TMPROOT}:${TMPROOT} \
@@ -85,3 +104,5 @@ do
 done
 
 echo "DeepVariant finished. Outputs are in $OUTDIR"
+
+
